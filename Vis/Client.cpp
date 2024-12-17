@@ -51,12 +51,12 @@ addrinfo* Client::ResolveConnectionAddress()  {
     return connection_address;
 }
 
-Protocol::Message Client::ProtocolDecomposition(const char* message, int msg_len)
+Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
 {
 
     Protocol::Message assembled;
     assembled.size = msg_len;
-
+    
     char buf1[255] = { 0 };
     char buf2[255] = { 0 };
     char* buf3;
@@ -112,13 +112,13 @@ Protocol::Message Client::ProtocolDecomposition(const char* message, int msg_len
         for (int i = 0; i < hosts; i++) {
             strbuf.clear();
             j = 0;
-            while (message[k + 10] != '/') {
+            while (message[k+10] != '/') {
                 buf1[j] = message[10 + k];
                 j++;
                 k++;
             }
             k++;
-
+            
             strbuf.assign(buf1);
             Globals::Locker2.lock();
             Globals::HostsList.push_back(strbuf);
@@ -164,12 +164,12 @@ Protocol::Message Client::ProtocolDecomposition(const char* message, int msg_len
         sizeSend++;
         j += sizeSend;
         std::ofstream file(filename);
-        //// Ïðîâåðÿåì, óñïåøíî ëè îòêðûëñÿ ôàéë
+
         //if (!file.is_open()) {
-        //    std::cerr << "Îøèáêà: íå óäàëîñü îòêðûòü ôàéë " << filename << " äëÿ çàïèñè." << std::endl;
+        //    std::cerr << "ÃŽÃ¸Ã¨Ã¡ÃªÃ : Ã­Ã¥ Ã³Ã¤Ã Ã«Ã®Ã±Ã¼ Ã®Ã²ÃªÃ°Ã»Ã²Ã¼ Ã´Ã Ã©Ã« " << filename << " Ã¤Ã«Ã¿ Ã§Ã Ã¯Ã¨Ã±Ã¨." << std::endl;
         //    return;
         //}
-        //// Çàïèñûâàåì äàííûå â ôàéë
+        //// Ã‡Ã Ã¯Ã¨Ã±Ã»Ã¢Ã Ã¥Ã¬ Ã¤Ã Ã­Ã­Ã»Ã¥ Ã¢ Ã´Ã Ã©Ã«
         //file << data;
 
         break;
@@ -182,7 +182,7 @@ Protocol::Message Client::ProtocolDecomposition(const char* message, int msg_len
 int Client::NumberDec(const char* mes, int start, int end) {
     char buf[2];
     int j = 0;
-    for (int i = start; i < end + 1; i++) {
+    for (int i = start; i < end+1; i++) {
         buf[j] = mes[i];
         j++;
     }
@@ -204,7 +204,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
         sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(), message.mail.c_str());
         cout << mes << endl;
         break;
-        //case HOSTS: äëÿ õîñòîâ íå ïðèìåíèìà îòïðàâêà ñ êëèåíòà
+  //case HOSTS: Ã¤Ã«Ã¿ ÃµÃ®Ã±Ã²Ã®Ã¢ Ã­Ã¥ Ã¯Ã°Ã¨Ã¬Ã¥Ã­Ã¨Ã¬Ã  Ã®Ã²Ã¯Ã°Ã Ã¢ÃªÃ  Ã± ÃªÃ«Ã¨Ã¥Ã­Ã²Ã 
     case AUTH:
         msg_len = 11 + message.authData.name.size() + message.authData.password.size();
         mes = new char[msg_len];
@@ -216,19 +216,17 @@ char* Client::ProtocolComposition(Protocol::Message message)
         sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.authData.name.c_str(), message.authData.password.c_str());
         break;
     case FILE:
-        msg_len = 12 + message.senderName.size() + message.destName.size() + message.mail.size() + message.extenshion.size();
+        msg_len = 12 + message.senderName.size() + message.destName.size() + message.mail.size()+message.extenshion.size();
         mes = new char[msg_len];
-        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(), message.extenshion.c_str(), message.mail.c_str());
+        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.mail.c_str());
         break;
     default:
         break;
     }
     return mes;
-
-
-}
     
-
+    
+}
 // @return `-1` on error, valid socket on success....
 
 SOCKET Client::CreateConnectionSocket(addrinfo* conn_addr) {
@@ -320,38 +318,38 @@ int Client::ReceiveMessage(char* writable_buff) {
   
     return recv_bytes;
 }
-void Client::PrintInputPrompt() const {
-    std::cin.clear();
-    std::cout << " >>> "s;
-    std::cout.flush();
-}
+//void Client::PrintInputPrompt() const {
+//    std::cin.clear();
+//    std::cout << " >>> "s;
+//    std::cout.flush();
+//}
 
-int Client::InputHandler() {
-    while (true) {
-        char msg_buff[MAX_DATA_BUFFER_SIZE];
-        PrintInputPrompt();
-        
-        std::fgets(msg_buff, MAX_DATA_BUFFER_SIZE, stdin);
-        std::string message_str(msg_buff);
-        message_str.pop_back(); // fgets() adds \n char to the end of the string
-        Protocol::Message mes;
-        mes.commandL = 0;
-        mes.destName = "SOME/";
-
-        mes.senderName = "inner/";
-        mes.mail = message_str;
-        std::cerr << "[Info] MAIL SODERJ."s <<mes.mail<< std::endl;
-        char* somemes = ProtocolComposition(mes);
-        if (SendMessage(somemes) == -1) {
-            std::exit(1);
-        }
-        memset(msg_buff, 0x00, MAX_DATA_BUFFER_SIZE);
-    }
-}
+//int Client::InputHandler() {
+//    while (true) {
+//        char msg_buff[MAX_DATA_BUFFER_SIZE];
+//        PrintInputPrompt();
+//        
+//        std::fgets(msg_buff, MAX_DATA_BUFFER_SIZE, stdin);
+//        std::string message_str(msg_buff);
+//        message_str.pop_back(); // fgets() adds \n char to the end of the string
+//        Protocol::Message mes;
+//        mes.commandL = 0;
+//        mes.destName = "SOME/";
+//
+//        mes.senderName = "inner/";
+//        mes.mail = message_str;
+//        std::cerr << "[Info] MAIL SODERJ."s <<mes.mail<< std::endl;
+//        char* somemes = ProtocolComposition(mes);
+//        if (SendMessage(somemes) == -1) {
+//            std::exit(1);
+//        }
+//        memset(msg_buff, 0x00, MAX_DATA_BUFFER_SIZE);
+//    }
+//}
 
 int Client::HandleConnection()  {
-    std::thread input_worker_thread(&Client::InputHandler, this); // Create a new thread for reading user input
-    input_worker_thread.detach();
+    //std::thread input_worker_thread(&Client::InputHandler, this); // Create a new thread for reading user input
+    //input_worker_thread.detach();
     while (true) {
         char msg_buff[MAX_DATA_BUFFER_SIZE];
         memset(msg_buff, 0x00, sizeof(msg_buff));
@@ -370,6 +368,6 @@ int Client::HandleConnection()  {
         }
         std::cout << msg_buff << '\n';
 
-        PrintInputPrompt();
+        /*PrintInputPrompt();*/
     }
 }
