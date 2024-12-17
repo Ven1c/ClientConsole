@@ -130,8 +130,48 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
     case AUTH_ACK:
         buf1[0] = message[8];
         assembled.result = atoi(buf1);
-            
-        
+        break;
+    case FILE:
+        for (int i = 0; i < 10; i++) {
+            sizeSend = i;
+            if (message[8 + i] == '/') {
+                break;
+            }
+            buf1[i] = message[8 + i];
+
+        }
+        sizeSend++;
+        assembled.senderName = std::string(buf1);
+        for (int i = 0; i < 10; i++) {
+            sizeDest = i;
+            if (message[8 + sizeSend + i] == '/') {
+                break;
+            }
+            buf2[i] = message[8 + sizeSend + i];
+        }
+        assembled.destName = std::string(buf2);
+        sizeDest++;
+        j = sizeDest + sizeSend;
+        for (int i = 0; i < 10; i++) {
+            sizeSend = i;
+            if (message[8 + i] == '/') {
+                break;
+            }
+            buf1[i] = message[8 + i];
+
+        }
+        assembled.extenshion = std::string(buf1);
+        sizeSend++;
+        j += sizeSend;
+        std::ofstream file(filename);
+
+        //if (!file.is_open()) {
+        //    std::cerr << "Îøèáêà: íå óäàëîñü îòêðûòü ôàéë " << filename << " äëÿ çàïèñè." << std::endl;
+        //    return;
+        //}
+        //// Çàïèñûâàåì äàííûå â ôàéë
+        //file << data;
+
         break;
     default:
         cout << "undefined protocol" << endl;
@@ -164,7 +204,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
         sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(), message.mail.c_str());
         cout << mes << endl;
         break;
-  //case HOSTS: ��� ������ �� ��������� �������� � �������
+  //case HOSTS: äëÿ õîñòîâ íå ïðèìåíèìà îòïðàâêà ñ êëèåíòà
     case AUTH:
         msg_len = 11 + message.authData.name.size() + message.authData.password.size();
         mes = new char[msg_len];
