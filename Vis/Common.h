@@ -57,7 +57,7 @@
 #define DEBUG 5
 #define ACK 6
 #define AUTH_ACK 7
-#define CHUNK_SIZE 4096
+#define CHUNK_SIZE 1536
 namespace Protocol {
     struct User {
         std::string name;

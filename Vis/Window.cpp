@@ -17,7 +17,13 @@ int consts = 0;
 Client clie;
 
 [STAThread]
-int  main() {
+int WINAPI WinMain
+(
+    HINSTANCE hInstance,	// указатель на текущий экземпл€р
+    HINSTANCE hPrevInstance,	// указатель на предыдущйи запушенный экземпл€р
+    LPSTR lpCmdLine,		// командна€ строка
+    int nCmdShow		// тип отображени€ окна программы
+){
 #ifdef _WIN32
     WSADATA d;
     if (WSAStartup(MAKEWORD(2, 2), &d)) {
@@ -25,8 +31,6 @@ int  main() {
         return 1;
     }
 #endif
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
     Application::EnableVisualStyles();
     Application::SetCompatibleTextRenderingDefault(false);
     Window^ win = gcnew Window;
@@ -58,7 +62,7 @@ void SideSocketProcces(const string &a, const string &b) {
 }
 
 System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e) {
-
+    
 
     char* msg_buff = (char*)(void*)Marshal::StringToHGlobalAnsi(textBox2->Text);
     std::string message_str(msg_buff);
@@ -77,8 +81,8 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
     if (clie.SendMessage(somemes) == -1) {
         std::exit(1);
     }
-    if (fileName != " " && fileName != nullptr) {
-        std::string file = string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName));
+    if (fileName != " " &&  fileName!=nullptr) {
+        std::string file= string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName));
         std::ifstream inputFile(file, std::ios::binary);
         char a[3];
         char* buffer = new char[CHUNK_SIZE];
@@ -87,7 +91,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
         if (!inputFile.is_open()) {
             std::cerr << "Ќе удалось открыть входной файл: " << string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName)) << std::endl;
         }
-
+        
         for (int i = 0; i < file.size(); i++) {
             if (fl) {
                 a[j] = file.c_str()[i];
@@ -96,12 +100,12 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
                 fl = true;
             }
         }
-
+        
         const auto begin = inputFile.tellg();
         inputFile.seekg(0, ios::end);
         const auto end = inputFile.tellg();
         const auto fsize = (end - begin);
-        int cycles = (fsize / CHUNK_SIZE) + 1;
+        int cycles = (fsize / CHUNK_SIZE)+1;
         int readed = 0;
         for (int i = 0; i < cycles; i++) {
             Protocol::Message mes;
@@ -116,7 +120,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
             mes.extenshion = string(a);
             clie.SendMessage(clie.ProtocolComposition(mes));
         }
-
+        
     }
 }
 System::Void Window::UpdateChat(Protocol::Message assembled) {
