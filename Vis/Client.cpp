@@ -163,7 +163,7 @@ Protocol::Message Client::ProtocolDecomposition(const char* message, int msg_len
         assembled.extenshion = std::string(buf1);
         sizeSend++;
         j += sizeSend;
-        //std::ofstream file(filename);
+        std::ofstream file(filename);
         //// Проверяем, успешно ли открылся файл
         //if (!file.is_open()) {
         //    std::cerr << "Ошибка: не удалось открыть файл " << filename << " для записи." << std::endl;
