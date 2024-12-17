@@ -193,10 +193,14 @@ private: System::Void backgroundWorker1_DoWork(System::Object^ sender, System::C
 		Globals::Locker.unlock();
 
 		Globals::Locker2.lock();
-		for (const auto& x : Globals::HostsList){
-			AddItemSafe(gcnew String(x.c_str()));
+		if (!Globals::HostsList.empty()) {
+			ClearBox();
+			AddItemSafe("ВСЕМ");
+			for (const auto& x : Globals::HostsList) {
+				AddItemSafe(gcnew String(x.c_str()));
+			}
+			Globals::HostsList.clear();
 		}
-		Globals::HostsList.clear();
 		Globals::Locker2.unlock();
 		Sleep(5);
 	}
@@ -215,7 +219,7 @@ private: System::Void UpdateChat(Protocol::Message);
 private: System::Void Window_Load(System::Object^ sender, System::EventArgs^ e) {
 
 	comboBox1->Items->Add("ВСЕМ");
-	comboBox1->SelectedIndex = 0;
+
 }
 void AppendTextSafe(String^ text)
 {
@@ -240,10 +244,22 @@ void AddItemSafe(String^ item)
 	else
 	{
 		// Если вызов происходит из UI-потока, добавляем элемент напрямую
+		
 		comboBox1->Items->Add(item);
 	}
 }
-
+void ClearBox()
+{
+	if (comboBox1->InvokeRequired)
+	{
+		// Если вызов происходит из другого потока, используем Invoke
+		comboBox1->Invoke(gcnew Action(this, &Window::ClearBox));
+	}
+	else
+	{
+		comboBox1->Items->Clear();
+	}
+}
 private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (this->openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
 		fileName = openFileDialog1->FileName;
