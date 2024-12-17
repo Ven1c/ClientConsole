@@ -81,7 +81,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
     if (clie.SendMessage(somemes) == -1) {
         std::exit(1);
     }
-    if (fileName != " " || fileName!=nullptr) {
+    if (fileName != " " &&  fileName!=nullptr) {
         std::string file= string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName));
         std::ifstream inputFile(file, std::ios::binary);
         char a[3];
