@@ -166,10 +166,10 @@ Protocol::Message Client::ProtocolDecomposition(const char* message, int msg_len
         /*std::ofstream file(filename);*/
 
         //if (!file.is_open()) {
-        //    std::cerr << "Ошибка: не удалось открыть файл " << filename << " для записи." << std::endl;
+        //    std::cerr << "������: �� ������� ������� ���� " << filename << " ��� ������." << std::endl;
         //    return;
         //}
-        //// Записываем данные в файл
+        //// ���������� ������ � ����
         //file << data;
 
         break;
@@ -204,7 +204,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
         sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(), message.mail.c_str());
         cout << mes << endl;
         break;
-        //case HOSTS: для хостов не применима отправка с клиента
+        //case HOSTS: ��� ������ �� ��������� �������� � �������
     case AUTH:
         msg_len = 11 + message.authData.name.size() + message.authData.password.size();
         mes = new char[msg_len];
