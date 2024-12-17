@@ -62,13 +62,13 @@ private:
 
     
 
-    // Prints the input prompt and flushes stdout afterwards. 
-    void PrintInputPrompt() const;
+    //// Prints the input prompt and flushes stdout afterwards. 
+    //void PrintInputPrompt() const;
 
-    /* Handles user input and message-sending process.
-     * @return `-1` on error, `0` on successful exit.
-    */
-    int InputHandler();
+    ///* Handles user input and message-sending process.
+    // * @return `-1` on error, `0` on successful exit.
+    //*/
+    //int InputHandler();
 
     /* Main client application loop. Handles incoming data and accepts user input.
      * @return `-1` on error, `0` on successful exit.
