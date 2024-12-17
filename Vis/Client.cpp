@@ -163,13 +163,13 @@ Protocol::Message Client::ProtocolDecomposition(const char* message, int msg_len
         assembled.extenshion = std::string(buf1);
         sizeSend++;
         j += sizeSend;
-        //std::ofstream file(filename);
-        //// Проверяем, успешно ли открылся файл
+        /*std::ofstream file(filename);*/
+
         //if (!file.is_open()) {
-        //    std::cerr << "Ошибка: не удалось открыть файл " << filename << " для записи." << std::endl;
+        //    std::cerr << "РћС€РёР±РєР°: РЅРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» " << filename << " РґР»СЏ Р·Р°РїРёСЃРё." << std::endl;
         //    return;
         //}
-        //// Записываем данные в файл
+        //// Р—Р°РїРёСЃС‹РІР°РµРј РґР°РЅРЅС‹Рµ РІ С„Р°Р№Р»
         //file << data;
 
         break;
@@ -204,7 +204,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
         sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(), message.mail.c_str());
         cout << mes << endl;
         break;
-        //case HOSTS: для хостов не применима отправка с клиента
+        //case HOSTS: РґР»СЏ С…РѕСЃС‚РѕРІ РЅРµ РїСЂРёРјРµРЅРёРјР° РѕС‚РїСЂР°РІРєР° СЃ РєР»РёРµРЅС‚Р°
     case AUTH:
         msg_len = 11 + message.authData.name.size() + message.authData.password.size();
         mes = new char[msg_len];
