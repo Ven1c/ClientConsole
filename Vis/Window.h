@@ -170,6 +170,7 @@ namespace Vis {
 			this->Controls->Add(this->textBox1);
 			this->Name = L"Window";
 			this->Text = L"SpiritMessenger";
+			this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &Window::Window_FormClosing);
 			this->Load += gcnew System::EventHandler(this, &Window::Window_Load);
 			this->ResumeLayout(false);
 			this->PerformLayout();
@@ -184,7 +185,7 @@ private: System::Void backgroundWorker1_DoWork(System::Object^ sender, System::C
 	
 	while (true) {
 		
-		
+		Sleep(15);
 		Globals::Locker.lock();
 		if (!Globals::assembleLine.empty()) {
 			UpdateChat(Globals::assembleLine.front());
@@ -197,12 +198,13 @@ private: System::Void backgroundWorker1_DoWork(System::Object^ sender, System::C
 			ClearBox();
 			AddItemSafe("бяел");
 			for (const auto& x : Globals::HostsList) {
+				std::cerr << "[Error] from window.h lock" << endl;
 				AddItemSafe(gcnew String(x.c_str()));
 			}
 			Globals::HostsList.clear();
 		}
 		Globals::Locker2.unlock();
-		Sleep(5);
+		
 	}
 }
 	   String^ fileName;;
@@ -267,5 +269,6 @@ private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e
 
 }
 	   
+public: System::Void Window_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e);
 };
 }

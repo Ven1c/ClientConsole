@@ -56,7 +56,8 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
 
     Protocol::Message assembled;
     assembled.size = msg_len;
-    
+    std::ofstream file;
+    std::ifstream test;
     char buf1[255] = { 0 };
     char buf2[255] = { 0 };
     char* buf3;
@@ -65,6 +66,7 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
     int k = 0;
     int j = 0;
     string strbuf;
+    std::string filepath;
     int hosts = 0;
     assembled.time.tm_hour = NumberDec(message, 0, 1);
     assembled.time.tm_min = NumberDec(message, 2, 3);
@@ -109,7 +111,9 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
         break;
     case HOSTS:
         hosts = NumberDec(message, 8, 9);
+
         for (int i = 0; i < hosts; i++) {
+            memset(&buf1[0], 0, sizeof(buf1));
             strbuf.clear();
             j = 0;
             while (message[k+10] != '/') {
@@ -121,6 +125,7 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
             
             strbuf.assign(buf1);
             Globals::Locker2.lock();
+            std::cerr << "[Error] from client.cpp lock" << endl;
             Globals::HostsList.push_back(strbuf);
             Globals::Locker2.unlock();
         }
@@ -152,28 +157,35 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
         assembled.destName = std::string(buf2);
         sizeDest++;
         j = sizeDest + sizeSend;
-        for (int i = 0; i < 10; i++) {
+        memset(&buf1[0], 0, sizeof(buf1));
+        for (int i = 0; i < 60; i++) {
             sizeSend = i;
-            if (message[8 + i] == '/') {
+            if (message[8 + i + j] == '/') {
                 break;
             }
-            buf1[i] = message[8 + i];
+            buf1[i] = message[8 + j+ i];
 
         }
         assembled.extenshion = std::string(buf1);
         sizeSend++;
         j += sizeSend;
-        /*std::ofstream file(filename);*/
+        
+        test.open(assembled.extenshion);
+        if (test.is_open()) {
+            test.close();
+            file.open(assembled.extenshion, ios::binary | ios::app);
+        }
+        else {
+            file.open(assembled.extenshion, ios::binary | ios::out);
+        }
+        std::locale::global(std::locale("en_US.UTF-8"));
 
-        //if (!file.is_open()) {
-        //    std::cerr << "������: �� ������� ������� ���� " << filename << " ��� ������." << std::endl;
-        //    return;
-        //}
-        //// ���������� ������ � ����
-        //file << data;
+        for (int i = 8 + j; i < assembled.size; i++) {
+            file << message[i];
+        }
 
             
-        
+        file.close();
         break;
     default:
         cout << "undefined protocol" << endl;
@@ -206,7 +218,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
         sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(), message.mail.c_str());
         cout << mes << endl;
         break;
-        //case HOSTS: ��� ������ �� ��������� �������� � �������
+
   //case HOSTS: для хостов не применима отправка с клиента
     case AUTH:
         msg_len = 11 + message.authData.name.size() + message.authData.password.size();
@@ -221,7 +233,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
     case FILE:
         msg_len = 12 + message.senderName.size() + message.destName.size() + message.mail.size()+message.extenshion.size();
         mes = new char[msg_len];
-        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.mail.c_str());
+        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.mail.c_str());
         break;
     default:
         break;

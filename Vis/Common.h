@@ -35,6 +35,9 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cerrno> 
+#include <errno.h>
+#include <locale.h>
 // Cross-Platform macros
 #ifdef _WIN32
 #define CLOSE_SOCKET(s) closesocket(s)
@@ -57,7 +60,7 @@
 #define DEBUG 5
 #define ACK 6
 #define AUTH_ACK 7
-#define CHUNK_SIZE 1536
+#define CHUNK_SIZE 1024
 namespace Protocol {
     struct User {
         std::string name;

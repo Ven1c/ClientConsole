@@ -15,7 +15,7 @@ using namespace System::Runtime::InteropServices;
 void SideSocketProcces(const string& a, const string& b);
 int consts = 0;
 Client clie;
-
+std::ifstream inputFile;
 [STAThread]
 int WINAPI WinMain
 (
@@ -82,45 +82,42 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
         std::exit(1);
     }
     if (fileName != " " &&  fileName!=nullptr) {
+      
         std::string file= string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName));
-        std::ifstream inputFile(file, std::ios::binary);
+        std::setlocale(LC_ALL, "Russian_Russia.1251");
         char a[3];
         char* buffer = new char[CHUNK_SIZE];
+        memset(&buffer[0], 0, sizeof(buffer));
         bool fl = false;
         int j = 0;
+        int h;
+        inputFile.open(file, std::ios::binary);
         if (!inputFile.is_open()) {
+            h = errno;
             std::cerr << "Не удалось открыть входной файл: " << string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName)) << std::endl;
         }
-        
-        for (int i = 0; i < file.size(); i++) {
-            if (fl) {
-                a[j] = file.c_str()[i];
-            }
-            if (file.c_str()[i] == '.') {
-                fl = true;
-            }
-        }
-        
-        const auto begin = inputFile.tellg();
-        inputFile.seekg(0, ios::end);
-        const auto end = inputFile.tellg();
-        const auto fsize = (end - begin);
-        int cycles = (fsize / CHUNK_SIZE)+1;
-        int readed = 0;
-        for (int i = 0; i < cycles; i++) {
+        std::size_t found = file.find_last_of("/\\");
+        while ( !inputFile.eof()) {
+            inputFile.read(buffer, CHUNK_SIZE);
+            std::size_t bytesRead = inputFile.gcount();
+            buffer[bytesRead] = '\0';
             Protocol::Message mes;
             time_t mytime = time(NULL);
             mes.time = *localtime(&mytime);
             mes.commandL = FILE;
-            inputFile.seekg(readed);
-            inputFile.read(buffer, CHUNK_SIZE);
-            std::streamsize bytesRead = inputFile.gcount();
-            readed += bytesRead;
             mes.mail = string(buffer);
-            mes.extenshion = string(a);
+            mes.extenshion = string(file.substr(found + 1));
+            mes.destName = Globals::dest;
+            mes.senderName = Globals::user;
             clie.SendMessage(clie.ProtocolComposition(mes));
+            memset(&buffer[0], 0, sizeof(buffer));
         }
         
+        inputFile.close();
+        inputFile.clear();
+        inputFile.seekg(0, ios::beg);
+
+
     }
 }
 System::Void Window::UpdateChat(Protocol::Message assembled) {
@@ -133,10 +130,16 @@ System::Void Window::UpdateChat(Protocol::Message assembled) {
    
 }
 System::Void LoginForm::LoginForm_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {
-
-  
+    if (!this->IsAutorised){
+        (*this->win)->Close();
+}
     
 }
+System::Void Window::Window_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {
+    clie.Disconnect();
+}
+
+
 System::Void LoginForm::Sign_In(System::Object^ sender, System::EventArgs^ e) {
     if (clie.GetStatus() == 1) {
         Protocol::User us;
@@ -153,6 +156,7 @@ System::Void LoginForm::Sign_In(System::Object^ sender, System::EventArgs^ e) {
                 Globals::user = us.name;
                 this->IsAutorised = true;
                 (*this->win)->Opacity = 1;
+                this->Close();
                 (*this->win)->ShowInTaskbar = true;
                 (*this->win)->backgroundWorker1->RunWorkerAsync();
                 
@@ -163,7 +167,7 @@ System::Void LoginForm::Sign_In(System::Object^ sender, System::EventArgs^ e) {
             }
             Sleep(100);
         }
-        this->Close();
+                
     }
 }
 System::Void LoginForm::Register(System::Object^ sender, System::EventArgs^ e) {
