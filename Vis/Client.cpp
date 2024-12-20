@@ -74,6 +74,7 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
     assembled.commandL = NumberDec(message, 6, 7);
     switch (assembled.commandL)
     {
+    case HISTORY:
     case STRDMES:
         for (int i = 0; i < 10; i++) {
             sizeSend = i;
@@ -111,7 +112,8 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
         break;
     case HOSTS:
         hosts = NumberDec(message, 8, 9);
-
+        Globals::Locker2.lock();
+        Globals::HostsList.clear();
         for (int i = 0; i < hosts; i++) {
             memset(&buf1[0], 0, sizeof(buf1));
             strbuf.clear();
@@ -124,11 +126,34 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
             k++;
             
             strbuf.assign(buf1);
-            Globals::Locker2.lock();
+            
             std::cerr << "[Error] from client.cpp lock" << endl;
             Globals::HostsList.push_back(strbuf);
-            Globals::Locker2.unlock();
+            
         }
+        Globals::Locker2.unlock();
+        break;
+    case HOSTS_OFLINE:
+        hosts = NumberDec(message, 8, 9);
+        Globals::Locker2.lock();
+        Globals::UserList.clear();
+        for (int i = 0; i < hosts; i++) {
+            memset(&buf1[0], 0, sizeof(buf1));
+            strbuf.clear();
+            j = 0;
+            while (message[k + 10] != '/') {
+                buf1[j] = message[10 + k];
+                j++;
+                k++;
+            }
+            k++;
+
+            strbuf.assign(buf1);
+            std::cerr << "[Error] from client.cpp lock" << endl;
+            Globals::UserList.push_back(strbuf);
+
+        }
+        Globals::Locker2.unlock();
         break;
     case ACK:
         //idk now
@@ -211,6 +236,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
     char* mes;
     switch (message.commandL)
     {
+    case HISTORY:
     case STRDMES:
         msg_len = 12 + message.senderName.size() + message.destName.size() + message.mail.size();
         mes = new char[msg_len];
@@ -233,7 +259,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
     case FILE:
         msg_len = 12 + message.senderName.size() + message.destName.size() + message.mail.size()+message.extenshion.size();
         mes = new char[msg_len];
-        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.mail.c_str());
+        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.file);
         break;
     default:
         break;
@@ -307,6 +333,7 @@ int Client::ReceiveMessage(char* writable_buff) {
     std::cerr << "[Debug] Received "s << recv_bytes << " bytes (actual packet)\n"s << writable_buff << "\n"s;
     Protocol::Message regular = ProtocolDecomposition(writable_buff,packet_length);
     switch (regular.commandL) {
+    case HISTORY:
     case STRDMES:
             std::cerr << "[Debug] ["s << regular.time.tm_hour << ":" << regular.time.tm_min << "] " << regular.mail << "\n"s;
             Globals::Locker.lock();
@@ -316,6 +343,7 @@ int Client::ReceiveMessage(char* writable_buff) {
     case HOSTS:
             std::cerr << "[Debug] ["s << regular.time.tm_hour << ":" << regular.time.tm_min << "] ";
             Globals::Locker2.lock();
+
             for (string i : Globals::HostsList) {
                 std::cerr << i;
             }

@@ -84,7 +84,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
     if (fileName != " " &&  fileName!=nullptr) {
       
         std::string file= string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName));
-        std::setlocale(LC_ALL, "Russian_Russia.1251");
+        
         char a[3];
         char* buffer = new char[CHUNK_SIZE];
         memset(&buffer[0], 0, sizeof(buffer));
@@ -105,7 +105,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
             time_t mytime = time(NULL);
             mes.time = *localtime(&mytime);
             mes.commandL = FILE;
-            mes.mail = string(buffer);
+            mes.file = buffer;
             mes.extenshion = string(file.substr(found + 1));
             mes.destName = Globals::dest;
             mes.senderName = Globals::user;
@@ -117,13 +117,13 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
         inputFile.clear();
         inputFile.seekg(0, ios::beg);
 
-
+        fileName = nullptr;
     }
 }
 System::Void Window::UpdateChat(Protocol::Message assembled) {
         
     char buf[150];
-    sprintf_s(buf, 150, "[%d:%d] %s: %s\r\n", assembled.time.tm_hour, assembled.time.tm_min, assembled.senderName.c_str(), assembled.mail.c_str());
+    sprintf_s(buf, 150, "[%02d:%02d] %s: %s\r\n", assembled.time.tm_hour, assembled.time.tm_min, assembled.senderName.c_str(), assembled.mail.c_str());
     System::String^ sys;
     sys = gcnew String(buf);
     AppendTextSafe(sys);
@@ -137,6 +137,41 @@ System::Void LoginForm::LoginForm_FormClosing(System::Object^ sender, System::Wi
 }
 System::Void Window::Window_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {
     clie.Disconnect();
+}
+System::Void Window::comboBox1_SelectionChangeCommitted(System::Object^ sender, System::EventArgs^ e) {
+ 
+    bool fl = false;
+    string g = string((char*)(void*)Marshal::StringToHGlobalAnsi(comboBox1->SelectedItem->ToString()));
+    g.erase(std::remove(g.begin(), g.end(), ' '), g.end());
+    for (auto& i : Globals::HostsList) {
+        if (i ==  g ) {
+            fl = true;
+        }
+    }
+    if (fl)
+    {
+        label2->Text = "В Сети";
+        label2->ForeColor = System::Drawing::Color::ForestGreen;
+    }
+    else {
+        label2->Text = "Не в Сети";
+        label2->ForeColor = System::Drawing::Color::Crimson;
+    }
+    if (comboBox1->SelectedIndex == 0) {
+        Globals::dest = "TO_ALL";
+    }
+    else {
+        Globals::dest = g;
+    }
+    textBox1->Clear();
+    Protocol::Message mes;
+    mes.commandL = HISTORY;
+    mes.destName = Globals::dest;
+    mes.senderName = Globals::user;
+    time_t mytime = time(NULL);
+    mes.time = *localtime(&mytime);
+    mes.mail = "/";
+    clie.SendMessage(clie.ProtocolComposition(mes));
 }
 
 

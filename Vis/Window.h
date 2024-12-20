@@ -56,6 +56,7 @@ namespace Vis {
 
 	private: System::Windows::Forms::Button^ button1;
 	private: System::Windows::Forms::OpenFileDialog^ openFileDialog1;
+	private: System::Windows::Forms::Label^ label2;
 	public:
 
 
@@ -83,6 +84,7 @@ namespace Vis {
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->button1 = (gcnew System::Windows::Forms::Button());
 			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
+			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
 			// 
 			// textBox1
@@ -91,6 +93,8 @@ namespace Vis {
 			this->textBox1->Margin = System::Windows::Forms::Padding(2);
 			this->textBox1->Multiline = true;
 			this->textBox1->Name = L"textBox1";
+			this->textBox1->ReadOnly = true;
+			this->textBox1->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
 			this->textBox1->Size = System::Drawing::Size(552, 236);
 			this->textBox1->TabIndex = 3;
 			// 
@@ -98,9 +102,8 @@ namespace Vis {
 			// 
 			this->textBox2->Location = System::Drawing::Point(405, 263);
 			this->textBox2->Margin = System::Windows::Forms::Padding(2);
-			this->textBox2->Multiline = true;
 			this->textBox2->Name = L"textBox2";
-			this->textBox2->Size = System::Drawing::Size(426, 29);
+			this->textBox2->Size = System::Drawing::Size(426, 20);
 			this->textBox2->TabIndex = 4;
 			// 
 			// backgroundWorker1
@@ -126,7 +129,8 @@ namespace Vis {
 			this->comboBox1->Name = L"comboBox1";
 			this->comboBox1->Size = System::Drawing::Size(236, 21);
 			this->comboBox1->TabIndex = 9;
-			this->comboBox1->SelectedIndexChanged += gcnew System::EventHandler(this, &Window::comboBox1_SelectedIndexChanged);
+			this->comboBox1->SelectionChangeCommitted += gcnew System::EventHandler(this, &Window::comboBox1_SelectionChangeCommitted);
+			this->comboBox1->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &Window::comboBox1_MouseMove);
 			// 
 			// label1
 			// 
@@ -156,12 +160,24 @@ namespace Vis {
 			this->openFileDialog1->InitialDirectory = L"C:\\\\";
 			this->openFileDialog1->Title = L"Выбор файла";
 			// 
+			// label2
+			// 
+			this->label2->AutoSize = true;
+			this->label2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->label2->Location = System::Drawing::Point(276, 55);
+			this->label2->Name = L"label2";
+			this->label2->Size = System::Drawing::Size(74, 18);
+			this->label2->TabIndex = 13;
+			this->label2->Text = L"Не в сети";
+			// 
 			// Window
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"$this.BackgroundImage")));
 			this->ClientSize = System::Drawing::Size(974, 514);
+			this->Controls->Add(this->label2);
 			this->Controls->Add(this->button1);
 			this->Controls->Add(this->label1);
 			this->Controls->Add(this->comboBox1);
@@ -182,41 +198,28 @@ namespace Vis {
 
 
 private: System::Void backgroundWorker1_DoWork(System::Object^ sender, System::ComponentModel::DoWorkEventArgs^ e) {
-	
+	string g;
 	while (true) {
 		
 		Sleep(15);
 		Globals::Locker.lock();
 		if (!Globals::assembleLine.empty()) {
-			UpdateChat(Globals::assembleLine.front());
+			g = string((char*)(void*)Marshal::StringToHGlobalAnsi(GetSelectedComboBoxItem()));
+			g.erase(std::remove(g.begin(), g.end(), ' '), g.end());
+			if (Globals::assembleLine.front().destName == g || Globals::assembleLine.front().senderName==g || Globals::assembleLine.front().destName == "TO_ALL") {
+				UpdateChat(Globals::assembleLine.front());
+			}
 			Globals::assembleLine.pop();
 		}
 		Globals::Locker.unlock();
 
-		Globals::Locker2.lock();
-		if (!Globals::HostsList.empty()) {
-			ClearBox();
-			AddItemSafe("ВСЕМ");
-			for (const auto& x : Globals::HostsList) {
-				std::cerr << "[Error] from window.h lock" << endl;
-				AddItemSafe(gcnew String(x.c_str()));
-			}
-			Globals::HostsList.clear();
-		}
-		Globals::Locker2.unlock();
+		
 		
 	}
 }
 	   String^ fileName;;
 private: System::Void button2_Click(System::Object^ sender, System::EventArgs^ e);
-private: System::Void comboBox1_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
-	if (comboBox1->SelectedIndex == 0) {
-		Globals::dest = "TO_ALL";
-	}
-	else {
-		Globals::dest = string((char*)(void*)Marshal::StringToHGlobalAnsi(comboBox1->SelectedItem->ToString()));
-	}
-}
+
 private: System::Void UpdateChat(Protocol::Message);	  
 private: System::Void Window_Load(System::Object^ sender, System::EventArgs^ e) {
 
@@ -270,5 +273,35 @@ private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e
 }
 	   
 public: System::Void Window_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e);
+private: System::Void comboBox1_MouseMove(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
+	Globals::Locker2.lock();
+	if (!Globals::UserList.empty()) {
+		ClearBox();
+		AddItemSafe("ВСЕМ");
+		for (const auto& x : Globals::UserList) {
+			std::cerr << "[Error] from window.h lock" << endl;
+			AddItemSafe(gcnew String(x.c_str()));
+		}
+
+	}
+	Globals::Locker2.unlock();
+}
+private: System::Void comboBox1_SelectionChangeCommitted(System::Object^ sender, System::EventArgs^ e);
+	   System::String^ GetSelectedComboBoxItem() {
+		   if (comboBox1->InvokeRequired) {
+			   // Используем делегат для вызова функции-члена
+			   return (System::String^)comboBox1->Invoke(gcnew System::Func<System::String^>(
+				   this, &Window::GetComboBox1SelectedItemValue));
+		   }
+		   else {
+			   // Прямой доступ из основного потока
+			   return GetComboBox1SelectedItemValue();
+		   }
+	   }
+	   System::String^ GetComboBox1SelectedItemValue() {
+		   return comboBox1->SelectedItem != nullptr
+			   ? comboBox1->SelectedItem->ToString()
+			   : "";
+	   }
 };
 }
