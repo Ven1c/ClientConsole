@@ -84,7 +84,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
     if (fileName != " " &&  fileName!=nullptr) {
       
         std::string file= string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName));
-        std::setlocale(LC_ALL, "Russian_Russia.1251");
+        
         char a[3];
         char* buffer = new char[CHUNK_SIZE];
         memset(&buffer[0], 0, sizeof(buffer));
@@ -105,7 +105,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
             time_t mytime = time(NULL);
             mes.time = *localtime(&mytime);
             mes.commandL = FILE;
-            mes.mail = string(buffer);
+            mes.file = buffer;
             mes.extenshion = string(file.substr(found + 1));
             mes.destName = Globals::dest;
             mes.senderName = Globals::user;

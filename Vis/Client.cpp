@@ -259,7 +259,7 @@ char* Client::ProtocolComposition(Protocol::Message message)
     case FILE:
         msg_len = 12 + message.senderName.size() + message.destName.size() + message.mail.size()+message.extenshion.size();
         mes = new char[msg_len];
-        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.mail.c_str());
+        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.file);
         break;
     default:
         break;

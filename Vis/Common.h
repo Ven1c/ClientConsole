@@ -77,6 +77,7 @@ namespace Protocol {
         std::string mail;
         int result;
         std::string extenshion;
+        char* file;
         User authData;
     };
 
