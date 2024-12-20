@@ -3,6 +3,7 @@ std::mutex Globals::Locker;
 std::mutex Globals::Locker2;
 std::queue<Protocol::Message> Globals::assembleLine;
 std::vector<string> Globals::HostsList;
+std::vector<string> Globals::UserList;
 std::string Globals::user="";
 std::string Globals::dest = "";
 int Globals::result = 3;

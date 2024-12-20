@@ -60,6 +60,8 @@
 #define DEBUG 5
 #define ACK 6
 #define AUTH_ACK 7
+#define HISTORY 8
+#define HOSTS_OFLINE 9
 #define CHUNK_SIZE 1024
 namespace Protocol {
     struct User {
@@ -87,6 +89,7 @@ public: static std::queue<Protocol::Message> assembleLine;
 public: static std::mutex Locker;
 public: static std::mutex Locker2;
 public: static std::vector<string> HostsList;
+public: static std::vector<string> UserList;
 public: static std::string user;
 public: static std::string Globals::dest;
 public: static std::string passwordHash;
