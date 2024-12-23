@@ -19,7 +19,7 @@ public:
         Disconnect();
     }
 public:
-   
+    SOCKET connection_socket_;
     /* Ñonfiguration packet with protocol fields.
     * @return NULL on error or wrong data
     */
@@ -77,7 +77,7 @@ private:
 
 private:
     std::string remote_hostname_, remote_port_;
-    SOCKET connection_socket_;
+    
     int status;
     
     time_t mytime;

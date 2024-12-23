@@ -86,7 +86,7 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
         std::string file= string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName));
         
         char a[3];
-        char* buffer = new char[CHUNK_SIZE];
+        char* buffer = new char[CHUNK_SIZE+1];
         memset(&buffer[0], 0, sizeof(buffer));
         bool fl = false;
         int j = 0;
@@ -97,25 +97,26 @@ System::Void Window::button2_Click(System::Object^ sender, System::EventArgs^ e)
             std::cerr << "Не удалось открыть входной файл: " << string((char*)(void*)Marshal::StringToHGlobalAnsi(fileName)) << std::endl;
         }
         std::size_t found = file.find_last_of("/\\");
-        while ( !inputFile.eof()) {
-            inputFile.read(buffer, CHUNK_SIZE);
+    
+        while (inputFile.read(buffer, CHUNK_SIZE) || inputFile.gcount() > 0) {
             std::size_t bytesRead = inputFile.gcount();
-            buffer[bytesRead] = '\0';
+
             Protocol::Message mes;
             time_t mytime = time(NULL);
             mes.time = *localtime(&mytime);
             mes.commandL = FILE;
-            mes.file = buffer;
+            mes.mail = std::to_string(bytesRead);;
             mes.extenshion = string(file.substr(found + 1));
             mes.destName = Globals::dest;
             mes.senderName = Globals::user;
             clie.SendMessage(clie.ProtocolComposition(mes));
-            memset(&buffer[0], 0, sizeof(buffer));
+            send(clie.connection_socket_, buffer, bytesRead, NULL);
+            memset(&buffer[0], 0, CHUNK_SIZE + 1);
+            Sleep(5);
         }
-        
+        delete[] buffer;
         inputFile.close();
         inputFile.clear();
-        inputFile.seekg(0, ios::beg);
 
         fileName = nullptr;
     }

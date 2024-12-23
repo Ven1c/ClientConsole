@@ -162,6 +162,7 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
         assembled.result = atoi(buf1);
         break;
     case FILE:
+        buf3 = new char[1024];
         for (int i = 0; i < 10; i++) {
             sizeSend = i;
             if (message[8 + i] == '/') {
@@ -194,7 +195,12 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
         assembled.extenshion = std::string(buf1);
         sizeSend++;
         j += sizeSend;
-        
+        j += 8;
+        memset(&buf1[0], 0, sizeof(buf1));
+        for (int i = 0; i < assembled.size-j; i++) {
+             buf1[i]= message[i+j];
+        }
+       
         test.open(assembled.extenshion);
         if (test.is_open()) {
             test.close();
@@ -203,12 +209,12 @@ Protocol::Message Client::ProtocolDecomposition(const char* message,int msg_len)
         else {
             file.open(assembled.extenshion, ios::binary | ios::out);
         }
-        std::locale::global(std::locale("en_US.UTF-8"));
-
-        for (int i = 8 + j; i < assembled.size; i++) {
-            file << message[i];
+        memset(&buf3[0], 0, sizeof(buf3));
+        recv(connection_socket_,buf3 , stoi(string(buf1)), NULL);
+        for (int i = 0; i < stoi(string(buf1)); i++) {
+            file << buf3[i];
         }
-
+        
             
         file.close();
         break;
@@ -257,9 +263,9 @@ char* Client::ProtocolComposition(Protocol::Message message)
         sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.authData.name.c_str(), message.authData.password.c_str());
         break;
     case FILE:
-        msg_len = 12 + message.senderName.size() + message.destName.size() + message.mail.size()+message.extenshion.size();
+        msg_len = 12 + message.senderName.size() + message.destName.size() +message.extenshion.size()+message.mail.size();
         mes = new char[msg_len];
-        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(), message.file);
+        sprintf_s(mes, msg_len, "%2d%2d%2d%2d%s/%s/%s/%s", message.time.tm_hour, message.time.tm_min, message.time.tm_sec, message.commandL, message.senderName.c_str(), message.destName.c_str(),message.extenshion.c_str(),message.mail.c_str());
         break;
     default:
         break;
